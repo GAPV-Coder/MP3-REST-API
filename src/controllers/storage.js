@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
-const { tracksModel } = require("../models");
+const { storagesModel } = require("../models");
+
+const PUBLIC_URL = process.env.PUBLIC_URL;
 
 /**
  * Get detail by single row
@@ -18,7 +20,7 @@ const getItem = async (req, res) => {
  * @param {*} res
  */
 const getAllItems = async (req, res) => {
-	const data = await tracksModel.find({});
+	const data = await storagesModel.find({});
 	res.send({ data });
 };
 
@@ -28,9 +30,14 @@ const getAllItems = async (req, res) => {
  * @param {*} res
  */
 const createItem = async (req, res) => {
-	const { body } = req;
-	const data = await tracksModel.create(body);
-	res.send({ data });
+	const { body, file } = req;
+	console.log(file);
+	const fileData = {
+		filename: file.filename,
+		url: `${PUBLIC_URL}/${file.filename}`
+	};
+	const data = await storagesModel.create(fileData);
+	res.send({ file });
 };
 
 /**
