@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { validatorCreateItem } = require("../validators/tracks.js");
 const {
 	getItem,
 	getAllItems,
@@ -8,6 +9,6 @@ const {
 
 router.get("/", getAllItems);
 
-router.post("/", createItem);
+router.post("/", validatorCreateItem, createItem);
 
 module.exports = router;
