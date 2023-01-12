@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
+const { matchedData } = require("express-validator");
 const { tracksModel } = require("../models");
+const { handleHttpError } = require("../utils/handleHttpError.js");
 
 /**
  * Get detail by single row
@@ -28,9 +30,14 @@ const getAllItems = async (req, res) => {
  * @param {*} res
  */
 const createItem = async (req, res) => {
-	const { body } = req;
-	const data = await tracksModel.create(body);
-	res.send({ data });
+	try {
+		req = matchedData(req);
+		console.log(req);
+		const data = await tracksModel.create(req);
+		res.send({ data });
+	} catch (e) {
+		handleHttpError(res, e);
+	}
 };
 
 /**
