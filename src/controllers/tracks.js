@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const { matchedData } = require("express-validator");
 const { tracksModel } = require("../models");
-const { handleHttpError } = require("../utils/handleHttpError.js");
+const { handleHttpError } = require("../utils/handleError.js");
+const optionsPaginate = require("../config/paginationParams.js");
 
 /**
  * Get detail by single row
@@ -9,9 +10,30 @@ const { handleHttpError } = require("../utils/handleHttpError.js");
  * @param {*} res
  */
 const getItem = async (req, res) => {
-	const data = ["hola", "mundo"];
+	try {
+		req = matchedData(req);
+		const id = req.id;
+		const [data] = await tracksModel.aggregate([
+			{
+				$lookup: {
+					from: "storages",
+					localField: "mediaId",
+					foreignField: "_id",
+					as: "audio"
+				}
+			},
+			{ $unwind: "$audio" },
+			{
+				$match: {
+					_id: mongoose.Types.ObjectId(id)
+				}
+			}
+		]);
 
-	res.send({ data });
+		res.send({ data });
+	} catch (e) {
+		handleHttpError(res, e);
+	}
 };
 
 /**
@@ -20,8 +42,13 @@ const getItem = async (req, res) => {
  * @param {*} res
  */
 const getAllItems = async (req, res) => {
-	const data = await tracksModel.find({});
-	res.send({ data });
+	try {
+		const [, options] = optionsPaginate(req);
+		const data = await tracksModel.paginate({}, options);
+		res.send({ data });
+	} catch (e) {
+		handleHttpError(res, e);
+	}
 };
 
 /**
@@ -45,13 +72,39 @@ const createItem = async (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-const updateItem = async (req, res) => {};
+const updateItem = async (req, res) => {
+	try {
+		req = matchedData(req);
+		const { id, ...body } = req;
+
+		const data = await tracksModel.findOneAndUpdate(id, body, {
+			new: true
+		});
+		res.send({ data });
+	} catch (e) {
+		handleHttpError(res, e);
+	}
+};
 
 /**
  * Delete row
  * @param {*} req
  * @param {*} res
  */
-const deleteItem = async (req, res) => {};
+const deleteItem = async (req, res) => {
+	try {
+		req = matchedData(req);
+		const id = req.id;
+		const findData = await tracksModel.delete({ _id: id });
+		const data = {
+			findData: findData,
+			deleted: true
+		};
+
+		res.send({ data });
+	} catch (e) {
+		handleHttpError(res, e);
+	}
+};
 
 module.exports = { getAllItems, getItem, createItem, updateItem, deleteItem };

@@ -1,16 +1,21 @@
 const { check } = require("express-validator");
 const validateResults = require("../utils/handleValidator.js");
 
-const validatorCreateItem = [
+const validateObjectDataCreate = [
 	check("name")
 		.exists()
 		.notEmpty(),
 	check("album")
 		.exists()
 		.notEmpty(),
+	check("mediaId")
+		.exists()
+		.notEmpty()
+		.isMongoId(),
 	check("cover")
 		.exists()
-		.notEmpty(),
+		.notEmpty()
+		.isURL(),
 	check("artist")
 		.exists()
 		.notEmpty(),
@@ -20,7 +25,7 @@ const validatorCreateItem = [
 	check("artist.nickname")
 		.exists()
 		.notEmpty(),
-	check("duration")
+	check("artist.nationality")
 		.exists()
 		.notEmpty(),
 	check("duration.start")
@@ -29,13 +34,63 @@ const validatorCreateItem = [
 	check("duration.end")
 		.exists()
 		.notEmpty(),
+	(req, res, next) => {
+		validateResults(req, res, next);
+	}
+];
+
+const validateObjectDataUpdate = [
+	check("id")
+		.exists()
+		.notEmpty(),
+	check("name")
+		.exists()
+		.notEmpty(),
+	check("album")
+		.exists()
+		.notEmpty(),
 	check("mediaId")
 		.exists()
 		.notEmpty()
 		.isMongoId(),
+	check("cover")
+		.exists()
+		.notEmpty()
+		.isURL(),
+	check("artist")
+		.exists()
+		.notEmpty(),
+	check("artist.name")
+		.exists()
+		.notEmpty(),
+	check("artist.nickname")
+		.exists()
+		.notEmpty(),
+	check("artist.nationality")
+		.exists()
+		.notEmpty(),
+	check("duration.start")
+		.exists()
+		.notEmpty(),
+	check("duration.end")
+		.exists()
+		.notEmpty(),
 	(req, res, next) => {
-		return validateResults(req, res, next);
+		validateResults(req, res, next);
 	}
 ];
 
-module.exports = { validatorCreateItem };
+const validateId = [
+	check("id")
+		.exists()
+		.isMongoId(),
+	(req, res, next) => {
+		validateResults(req, res, next);
+	}
+];
+
+module.exports = {
+	validateObjectDataCreate,
+	validateObjectDataUpdate,
+	validateId
+};
